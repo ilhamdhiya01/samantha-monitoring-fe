@@ -32,8 +32,10 @@ const ContainerNav = React.memo(() => {
     );
   }
 
+  // Desktop: hanya daftar ini yang di-scroll saat container banyak, supaya
+  // "Halaman" dan footer sidebar tetap terlihat.
   return (
-    <ul className="m-0 flex list-none overflow-x-auto p-0 md:flex-col md:overflow-visible">
+    <ul className="m-0 flex list-none overflow-x-auto p-0 md:min-h-0 md:flex-1 md:flex-col md:overflow-x-hidden md:overflow-y-auto">
       {containers.map((container) => (
         <li key={container.id} className="shrink-0">
           <Link

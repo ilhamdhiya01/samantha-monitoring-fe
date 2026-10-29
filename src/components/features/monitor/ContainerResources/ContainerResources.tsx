@@ -11,8 +11,10 @@ import {
 import { useContainers } from "@/lib/hooks/containers/useContainers";
 import { useNow } from "@/lib/hooks/useNow";
 
-const ROW =
-  "grid grid-cols-4 gap-2 border-b border-line-soft py-1.25 font-mono text-[11.5px]";
+// Nama dapat sisa lebar; angka lebar tetap supaya kolom rata.
+const COLUMNS =
+  "grid grid-cols-[minmax(0,1fr)_2.5rem_3.25rem_3.25rem] gap-2 font-mono";
+const ROW = `${COLUMNS} border-b border-line-soft py-1.25 text-[11.5px]`;
 
 const ContainerResources = React.memo(() => {
   const { data: containers, isLoading, isError } = useContainers();
@@ -32,31 +34,44 @@ const ContainerResources = React.memo(() => {
           role="table"
           aria-label="Resource per container"
         >
-          <div role="row" className="sr-only">
-            <span role="columnheader">Container</span>
-            <span role="columnheader">CPU</span>
-            <span role="columnheader">RAM</span>
-            <span role="columnheader">Uptime</span>
+          <div
+            role="row"
+            className={`${COLUMNS} border-b border-line pb-1 text-[10.5px] text-muted`}
+          >
+            <span role="columnheader">container</span>
+            <span role="columnheader" className="text-right">
+              cpu
+            </span>
+            <span role="columnheader" className="text-right">
+              ram
+            </span>
+            <span role="columnheader" className="text-right">
+              up
+            </span>
           </div>
-          {containers.map((container) => (
-            <div key={container.id} role="row" className={ROW}>
-              <span role="cell" className="truncate" title={container.name}>
-                {container.name}
-              </span>
-              <span role="cell" className="text-right text-fg-secondary">
-                {formatPercent(container.cpuPercent)}
-              </span>
-              <span role="cell" className="text-right text-fg-secondary">
-                {formatMemShort(container.memoryBytes)}
-              </span>
-              <span role="cell" className="text-right text-muted">
-                {container.status === "running" ||
-                container.status === "restarting"
-                  ? formatUptimeSince(container.startedAt, now)
-                  : "—"}
-              </span>
-            </div>
-          ))}
+          {/* Tinggi dibatasi: VPS dengan puluhan container tidak memanjangkan
+              panel kanan. */}
+          <div role="rowgroup" className="max-h-72 overflow-y-auto">
+            {containers.map((container) => (
+              <div key={container.id} role="row" className={ROW}>
+                <span role="cell" className="truncate" title={container.name}>
+                  {container.name}
+                </span>
+                <span role="cell" className="text-right text-fg-secondary">
+                  {formatPercent(container.cpuPercent)}
+                </span>
+                <span role="cell" className="text-right text-fg-secondary">
+                  {formatMemShort(container.memoryBytes)}
+                </span>
+                <span role="cell" className="text-right text-muted">
+                  {container.status === "running" ||
+                  container.status === "restarting"
+                    ? formatUptimeSince(container.startedAt, now)
+                    : "—"}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </SectionCard>
