@@ -19,8 +19,9 @@ const QueryProvider = ({ children }: QueryProviderProps) => {
     () =>
       new QueryClient({
         defaultOptions: {
-          // Data dipoll dengan refetchInterval masing-masing hook.
-          queries: { staleTime: 2_000, retry: shouldRetry },
+          // staleTime per hook = interval poll-nya (lihat lib/hooks/*);
+          // default ini hanya untuk query tanpa jadwal.
+          queries: { staleTime: 30_000, retry: shouldRetry },
         },
       }),
   );

@@ -9,7 +9,8 @@ import { useImages } from "@/lib/hooks/images/useImages";
 
 import ImageRow from "./ImageRow";
 
-const HEAD = "border-b border-line-soft px-3 py-1.75 font-medium";
+const HEAD =
+  "border-b border-line-soft px-3 py-1.75 font-medium whitespace-nowrap";
 
 const ImagesTable = React.memo(() => {
   const { data: summary, isLoading, isError } = useImages();
@@ -55,7 +56,7 @@ const ImagesTable = React.memo(() => {
       )}
       {summary && summary.images.length > 0 && (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-190 border-collapse text-[12.5px]">
+          <table className="w-full min-w-240 border-collapse text-[12.5px]">
             <thead>
               <tr className="text-left text-[11px] text-muted">
                 <th scope="col" className={`${HEAD} px-4`}>

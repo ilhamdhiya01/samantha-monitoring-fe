@@ -25,5 +25,7 @@ export const useErrorsHourly = () => {
     queryFn: getErrorsHourly,
     select: selectChart,
     refetchInterval: POLL_ERRORS_MS,
+    // Segar sampai jadwal poll berikutnya: pindah menu memakai cache.
+    staleTime: POLL_ERRORS_MS,
   });
 };

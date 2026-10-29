@@ -9,7 +9,11 @@ import {
   formatPercent,
 } from "@/lib/helpers/format.helper";
 import type { Tone } from "@/lib/helpers/threshold.helper";
-import { getUsageTone, toPercent } from "@/lib/helpers/threshold.helper";
+import {
+  getUsageTone,
+  isFinished,
+  toPercent,
+} from "@/lib/helpers/threshold.helper";
 import { useContainers } from "@/lib/hooks/containers/useContainers";
 import { useSystemStats } from "@/lib/hooks/system/useSystemStats";
 
@@ -18,22 +22,30 @@ const GRID = "grid grid-cols-2 border-b border-line bg-panel lg:grid-cols-4";
 const ContainerCard = React.memo(() => {
   const { data: containers } = useContainers();
 
+  // Job yang selesai normal (exit 0, mis. *-migrate) bukan masalah: tidak
+  // dihitung sebagai "berhenti" maupun dalam total.
   const summary = useMemo(() => {
     if (!containers) return null;
+    const finished = containers.filter((c) =>
+      isFinished(c.status, c.exitCode),
+    ).length;
+    const total = containers.length - finished;
     const running = containers.filter((c) => c.status === "running").length;
     const restarting = containers.filter(
       (c) => c.status === "restarting",
     ).length;
-    const down = containers.length - running - restarting;
+    const down = total - running - restarting;
     const tone: Tone = down > 0 ? "err" : restarting > 0 ? "warn" : "ok";
     const notes = [
       restarting > 0 && `${restarting} restarting`,
       down > 0 && `${down} berhenti`,
+      restarting === 0 && down === 0 && "semua jalan",
+      finished > 0 && `${finished} job selesai`,
     ].filter(Boolean);
     return {
-      value: `${running} / ${containers.length}`,
-      note: notes.length > 0 ? notes.join(" · ") : "semua jalan",
-      percent: toPercent(running, containers.length),
+      value: `${running} / ${total}`,
+      note: notes.join(" · "),
+      percent: toPercent(running, total),
       tone,
     };
   }, [containers]);

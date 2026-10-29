@@ -10,17 +10,19 @@ import { imageKeys } from "./queryKeys";
 const STATE_ORDER: Record<ImageInfo["state"], number> = {
   active: 0,
   previous: 1,
-  dangling: 2,
+  unused: 2,
+  dangling: 3,
 };
 
 const time = (iso: string | null) => (iso ? Date.parse(iso) : 0);
 
-// Per repo, image aktif dulu lalu yang sebelumnya (terbaru di atas);
-// dangling di paling bawah.
+// Repo yang dipakai dulu (aktif lalu versi sebelumnya, terbaru di atas),
+// lalu image tak terpakai, lalu dangling.
 const sortImages = (a: ImageInfo, b: ImageInfo) => {
-  const isDangling =
-    Number(a.state === "dangling") - Number(b.state === "dangling");
-  if (isDangling !== 0) return isDangling;
+  const rank = (image: ImageInfo) =>
+    image.state === "dangling" ? 2 : image.state === "unused" ? 1 : 0;
+  const byRank = rank(a) - rank(b);
+  if (byRank !== 0) return byRank;
   const byRepo = a.repository.localeCompare(b.repository);
   if (byRepo !== 0) return byRepo;
   const byState = STATE_ORDER[a.state] - STATE_ORDER[b.state];
@@ -39,5 +41,7 @@ export const useImages = () => {
     queryFn: getImages,
     select: selectSummary,
     refetchInterval: POLL_IMAGES_MS,
+    // Segar sampai jadwal poll berikutnya: pindah menu memakai cache.
+    staleTime: POLL_IMAGES_MS,
   });
 };

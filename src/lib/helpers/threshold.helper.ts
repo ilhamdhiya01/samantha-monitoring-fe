@@ -17,11 +17,29 @@ export const getUsageTone = (percent: number): Tone => {
   return "ok";
 };
 
-export const getStatusTone = (status: ContainerStatus): Tone => {
+// Container yang berhenti dengan exit 0 (job migrate dll.) selesai normal.
+export const isFinished = (status: ContainerStatus, exitCode: number | null) =>
+  status === "exited" && exitCode === 0;
+
+export const getStatusTone = (
+  status: ContainerStatus,
+  exitCode: number | null = null,
+): Tone => {
   if (status === "running") return "ok";
+  if (isFinished(status, exitCode)) return "muted";
   if (status === "restarting" || status === "paused") return "warn";
   if (status === "created") return "muted";
   return "err";
+};
+
+// "running", "selesai", "exited (1)".
+export const getStatusLabel = (
+  status: ContainerStatus,
+  exitCode: number | null = null,
+) => {
+  if (isFinished(status, exitCode)) return "selesai";
+  if (status === "exited" && exitCode !== null) return `exited (${exitCode})`;
+  return status;
 };
 
 export const getRestartTone = (count: number): Tone =>

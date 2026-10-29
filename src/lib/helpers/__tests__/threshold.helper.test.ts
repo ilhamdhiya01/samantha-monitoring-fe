@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import {
   getRestartTone,
+  getStatusLabel,
   getStatusTone,
+  isFinished,
   getUsageTone,
   toPercent,
 } from "../threshold.helper";
@@ -19,6 +21,16 @@ describe("threshold.helper", () => {
     expect(getStatusTone("running")).toBe("ok");
     expect(getStatusTone("restarting")).toBe("warn");
     expect(getStatusTone("exited")).toBe("err");
+  });
+
+  it("treats exit 0 as a finished job, not a failure", () => {
+    expect(isFinished("exited", 0)).toBe(true);
+    expect(isFinished("exited", 1)).toBe(false);
+    expect(getStatusTone("exited", 0)).toBe("muted");
+    expect(getStatusTone("exited", 137)).toBe("err");
+    expect(getStatusLabel("exited", 0)).toBe("selesai");
+    expect(getStatusLabel("exited", 1)).toBe("exited (1)");
+    expect(getStatusLabel("running", null)).toBe("running");
   });
 
   it("flags more than 5 restarts", () => {

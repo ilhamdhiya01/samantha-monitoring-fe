@@ -38,6 +38,7 @@ const CONTAINERS: MockContainer[] = [
     memoryBytes: 310 * MB,
     restartCount: 3,
     startedMsAgo: 2 * DAY + 4 * HOUR,
+    exitCode: null,
   },
   {
     id: "8b7d55c3e902",
@@ -49,6 +50,7 @@ const CONTAINERS: MockContainer[] = [
     memoryBytes: 48 * MB,
     restartCount: 14,
     startedMsAgo: 10_000,
+    exitCode: null,
   },
   {
     id: "c09e1f7a3d45",
@@ -60,6 +62,7 @@ const CONTAINERS: MockContainer[] = [
     memoryBytes: 22 * MB,
     restartCount: 0,
     startedMsAgo: 23 * DAY,
+    exitCode: null,
   },
   {
     id: "2d6a8e4b7f90",
@@ -71,6 +74,7 @@ const CONTAINERS: MockContainer[] = [
     memoryBytes: 480 * MB,
     restartCount: 0,
     startedMsAgo: 23 * DAY,
+    exitCode: null,
   },
   {
     id: "7e3b9c1d5a26",
@@ -82,6 +86,19 @@ const CONTAINERS: MockContainer[] = [
     memoryBytes: 118 * MB,
     restartCount: 0,
     startedMsAgo: 23 * DAY,
+    exitCode: null,
+  },
+  {
+    id: "91c4e7a2b3d8",
+    name: "tees-api-migrate",
+    image: "tees-api",
+    tag: "1.8.2-migrator",
+    status: "exited",
+    cpuPercent: 0,
+    memoryBytes: 0,
+    restartCount: 0,
+    startedMsAgo: null,
+    exitCode: 0,
   },
 ];
 
@@ -205,23 +222,27 @@ const image = (
 
 const IMAGES: ImageInfo[] = [
   image("tees-api", "1.8.2", "a3f9c1e07b2d", 212, 0.6, "active", [
-    { name: "tees-api", status: "running" },
+    { name: "tees-api", status: "running", exitCode: null },
   ]),
   image("tees-api", "1.8.1", "7c2d44b1e9a0", 209, 3.7, "previous"),
   image("tees-api", "1.8.0", "19e0ab77c3f4", 208, 8.5, "previous"),
   image("tees-worker", "1.8.2", "e51b9d0c2a68", 198, 0.6, "active", [
-    { name: "tees-worker", status: "restarting" },
+    { name: "tees-worker", status: "restarting", exitCode: null },
   ]),
   image("tees-worker", "1.8.1", "b0d7e3f1a925", 196, 3.7, "previous"),
   image("nginx", "1.27-alpine", "9f2e7b1c4d60", 48, 23, "active", [
-    { name: "nginx", status: "running" },
+    { name: "nginx", status: "running", exitCode: null },
   ]),
   image("postgres", "16", "5b8c0d2e6f13", 432, 23, "active", [
-    { name: "postgres", status: "running" },
+    { name: "postgres", status: "running", exitCode: null },
   ]),
   image("redis", "7-alpine", "3c6f9a0e8b27", 41, 23, "active", [
-    { name: "redis", status: "running" },
+    { name: "redis", status: "running", exitCode: null },
   ]),
+  image("tees-api", "1.8.2-migrator", "c5e8a1f4d207", 640, 0.6, "active", [
+    { name: "tees-api-migrate", status: "exited", exitCode: 0 },
+  ]),
+  image("alpine", "latest", "be2656061b53", 12, null, "unused"),
   image("tees-api", null, "d41e8a2c7b90", 410, null, "dangling"),
   image("tees-worker", null, "6a0f3e9d1c58", 402, null, "dangling"),
   image("tees-api", null, "f87b2c5e0a14", 417, null, "dangling"),

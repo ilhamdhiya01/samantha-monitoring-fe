@@ -12,4 +12,7 @@ export interface ContainerInfo {
   restartCount: number;
   // ISO; null kalau container belum pernah jalan.
   startedAt: string | null;
+  // Exit code terakhir untuk container yang berhenti; null kalau jalan.
+  // Exit 0 = selesai normal (mis. job migrate), bukan masalah.
+  exitCode: number | null;
 }

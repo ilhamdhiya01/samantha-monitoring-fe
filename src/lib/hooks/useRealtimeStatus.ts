@@ -10,13 +10,16 @@ export const RealtimeStatusContext =
 export const useRealtimeStatus = (): RealtimeStatus =>
   useContext(RealtimeStatusContext);
 
-// Opsi poll untuk query yang juga dikirim lewat SSE: selama stream
-// tersambung tidak ada poll maupun refetch saat jendela kembali fokus;
-// saat putus, keduanya hidup lagi otomatis.
+// Opsi poll untuk query yang juga dikirim lewat SSE. Selama stream
+// tersambung, cache selalu dianggap segar (stream yang memperbaruinya):
+// tidak ada poll, refetch saat fokus, maupun refetch saat komponen dipasang
+// ulang karena pindah menu. Saat putus, data segar sampai jadwal poll
+// berikutnya, lalu poll jalan lagi.
 export const useLivePollOptions = (pollMs: number) => {
   const isLive = useRealtimeStatus() === "open";
   return {
     refetchInterval: isLive ? (false as const) : pollMs,
     refetchOnWindowFocus: !isLive,
+    staleTime: isLive ? Infinity : pollMs,
   };
 };

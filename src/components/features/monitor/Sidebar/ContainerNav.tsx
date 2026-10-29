@@ -5,7 +5,11 @@ import React from "react";
 import SectionMessage from "@/components/shared/section-message";
 import Skeleton from "@/components/ui/skeleton";
 import StatusDot from "@/components/ui/status-dot";
-import { getRestartTone, getStatusTone } from "@/lib/helpers/threshold.helper";
+import {
+  getRestartTone,
+  getStatusLabel,
+  getStatusTone,
+} from "@/lib/helpers/threshold.helper";
 import { useContainers } from "@/lib/hooks/containers/useContainers";
 
 const ITEM =
@@ -45,7 +49,10 @@ const ContainerNav = React.memo(() => {
             activeProps={{ className: "border-sel-border bg-sel" }}
             inactiveProps={{ className: "border-transparent" }}
           >
-            <StatusDot tone={getStatusTone(container.status)} />
+            <StatusDot
+              tone={getStatusTone(container.status, container.exitCode)}
+              title={getStatusLabel(container.status, container.exitCode)}
+            />
             <span className="min-w-0 flex-1 truncate font-mono text-xs">
               {container.name}
             </span>

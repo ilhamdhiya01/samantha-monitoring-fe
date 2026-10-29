@@ -3,7 +3,7 @@ import React from "react";
 
 import Button from "@/components/ui/button";
 import StatusDot from "@/components/ui/status-dot";
-import { getStatusTone } from "@/lib/helpers/threshold.helper";
+import { getStatusLabel, getStatusTone } from "@/lib/helpers/threshold.helper";
 import { useContainer } from "@/lib/hooks/containers/useContainers";
 import type { LogStreamStatus } from "@/lib/types/log.types";
 
@@ -37,7 +37,7 @@ const LogHeader = React.memo(
     onTogglePause,
   }: LogHeaderProps) => {
     const { data: info } = useContainer(container);
-    const tone = info ? getStatusTone(info.status) : "muted";
+    const tone = info ? getStatusTone(info.status, info.exitCode) : "muted";
 
     return (
       <div className="flex flex-wrap items-center gap-2 border-b border-line bg-panel px-4 py-2">
@@ -54,7 +54,7 @@ const LogHeader = React.memo(
               )}
             >
               <StatusDot tone={tone} size="sm" />
-              {info.status}
+              {getStatusLabel(info.status, info.exitCode)}
             </span>
           </>
         )}
