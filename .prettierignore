@@ -4,3 +4,4 @@ yarn.lock
 src/routeTree.gen.ts
 design/
 dist/
+deploy/nginx.conf

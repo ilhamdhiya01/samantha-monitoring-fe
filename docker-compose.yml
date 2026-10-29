@@ -1,0 +1,34 @@
+# Dipakai di VPS (~/dashboard-monitoring/samantha-monitoring-fe).
+# Butuh BE (samantha-monitoring-be) sudah jalan: network `monitor` dibuat
+# oleh compose BE, dan Nginx di sini meneruskan /api/v1 ke monitor-api.
+
+services:
+  monitor-web:
+    image: ghcr.io/ilhamdhiya01/samantha-monitoring-fe:${IMAGE_TAG:-latest}
+    build: .
+    pull_policy: always
+    container_name: monitor-web
+    restart: unless-stopped
+    # Loopback saja — belum ada login. Buka lewat SSH tunnel:
+    #   ssh -L 3310:127.0.0.1:3310 ubuntu@<vps>  →  http://localhost:3310
+    ports:
+      - "127.0.0.1:3310:80"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 32M
+    networks: [monitor]
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+networks:
+  monitor:
+    external: true
