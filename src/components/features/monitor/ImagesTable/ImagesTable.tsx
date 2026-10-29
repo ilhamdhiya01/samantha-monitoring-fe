@@ -9,8 +9,10 @@ import { useImages } from "@/lib/hooks/images/useImages";
 
 import ImageRow from "./ImageRow";
 
+// Header menempel di atas saat tabel di-scroll. Garis bawahnya lewat
+// shadow: border pada sel sticky ikut hilang di tabel border-collapse.
 const HEAD =
-  "border-b border-line-soft px-3 py-1.75 font-medium whitespace-nowrap";
+  "sticky top-0 z-10 bg-panel px-3 py-1.75 font-medium whitespace-nowrap shadow-[0_1px_0] shadow-line-soft";
 
 const ImagesTable = React.memo(() => {
   const { data: summary, isLoading, isError } = useImages();
@@ -55,7 +57,9 @@ const ImagesTable = React.memo(() => {
         <SectionMessage className="px-4">Belum ada image.</SectionMessage>
       )}
       {summary && summary.images.length > 0 && (
-        <div className="overflow-x-auto">
+        // Tinggi dibatasi: VPS dengan puluhan image tidak memanjangkan
+        // halaman; sisanya di-scroll (horizontal juga di layar sempit).
+        <div className="max-h-120 overflow-auto">
           <table className="w-full min-w-240 border-collapse text-[12.5px]">
             <thead>
               <tr className="text-left text-[11px] text-muted">
