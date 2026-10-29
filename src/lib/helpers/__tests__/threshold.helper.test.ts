@@ -4,8 +4,8 @@ import {
   getRestartTone,
   getStatusLabel,
   getStatusTone,
-  isFinished,
   getUsageTone,
+  isFinished,
   toPercent,
 } from "../threshold.helper";
 

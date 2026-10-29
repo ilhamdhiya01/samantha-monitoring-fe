@@ -8,11 +8,8 @@ import {
   formatDateTime,
   shortImageId,
 } from "@/lib/helpers/format.helper";
-import type {Tone} from "@/lib/helpers/threshold.helper";
-import {
-  getStatusLabel,
-  getStatusTone
-} from "@/lib/helpers/threshold.helper";
+import type { Tone } from "@/lib/helpers/threshold.helper";
+import { getStatusLabel, getStatusTone } from "@/lib/helpers/threshold.helper";
 import type { ImageInfo } from "@/lib/types/image.types";
 
 const TONE_TEXT: Record<Tone, string> = {
