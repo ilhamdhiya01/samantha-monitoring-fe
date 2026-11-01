@@ -1,22 +1,29 @@
-import { Link } from "@tanstack/react-router";
-import classNames from "classnames";
-import React from "react";
+import React, { useMemo } from "react";
 
 import SectionMessage from "@/components/shared/section-message";
 import Skeleton from "@/components/ui/skeleton";
-import StatusDot from "@/components/ui/status-dot";
-import {
-  getRestartTone,
-  getStatusLabel,
-  getStatusTone,
-} from "@/lib/helpers/threshold.helper";
+import { groupContainersByProject } from "@/lib/helpers/container.helper";
+import { getImageSizeByContainer } from "@/lib/helpers/image.helper";
 import { useContainers } from "@/lib/hooks/containers/useContainers";
+import { useImages } from "@/lib/hooks/images/useImages";
 
-const ITEM =
-  "flex min-h-9 shrink-0 items-center gap-2.5 border-b-2 px-4 text-left text-[13px] text-fg no-underline md:w-full md:border-b-0 md:border-l-2";
+import ContainerLink from "./ContainerLink";
+import ProjectGroup from "./ProjectGroup";
 
 const ContainerNav = React.memo(() => {
   const { data: containers, isLoading, isError } = useContainers();
+  // Ukuran image hanya pelengkap: selama belum ada (atau gagal), kolomnya
+  // kosong — daftar container tidak ikut tertahan.
+  const { data: imageSummary } = useImages();
+
+  const entries = useMemo(
+    () => (containers ? groupContainersByProject(containers) : []),
+    [containers],
+  );
+  const imageSizes = useMemo(
+    () => getImageSizeByContainer(imageSummary?.images ?? []),
+    [imageSummary],
+  );
 
   if (isError) {
     return (
@@ -40,37 +47,23 @@ const ContainerNav = React.memo(() => {
   // "Halaman" dan footer sidebar tetap terlihat.
   return (
     <ul className="m-0 flex list-none overflow-x-auto p-0 md:min-h-0 md:flex-1 md:flex-col md:overflow-x-hidden md:overflow-y-auto">
-      {containers.map((container) => (
-        <li key={container.id} className="shrink-0">
-          <Link
-            to="/containers/$name"
-            params={{ name: container.name }}
-            className={ITEM}
-            activeProps={{ className: "border-sel-border bg-sel" }}
-            inactiveProps={{ className: "border-transparent" }}
-          >
-            <StatusDot
-              tone={getStatusTone(container.status, container.exitCode)}
-              title={getStatusLabel(container.status, container.exitCode)}
+      {entries.map((entry) =>
+        entry.kind === "project" ? (
+          <ProjectGroup
+            key={`project:${entry.name}`}
+            name={entry.name}
+            containers={entry.containers}
+            imageSizes={imageSizes}
+          />
+        ) : (
+          <li key={entry.container.id} className="shrink-0">
+            <ContainerLink
+              container={entry.container}
+              imageSize={imageSizes.get(entry.container.name)}
             />
-            <span className="min-w-0 flex-1 truncate font-mono text-xs">
-              {container.name}
-            </span>
-            {container.restartCount > 0 && (
-              <span
-                title={`${container.restartCount} restart`}
-                className={classNames("font-mono text-[11px]", {
-                  "text-err": getRestartTone(container.restartCount) === "err",
-                  "text-warn-fg":
-                    getRestartTone(container.restartCount) === "warn",
-                })}
-              >
-                ↻{container.restartCount}
-              </span>
-            )}
-          </Link>
-        </li>
-      ))}
+          </li>
+        ),
+      )}
     </ul>
   );
 });

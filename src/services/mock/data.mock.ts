@@ -1,8 +1,14 @@
 // Data tiruan selama backend belum ada. Angka awal mengikuti design;
 // nilai CPU/RAM sedikit berfluktuasi tiap poll supaya UI terasa hidup.
-import type { Alert } from "@/lib/types/alert.types";
+import type {
+  ActionStatus,
+  ContainerAction,
+  ContainerActionResult,
+} from "@/lib/types/action.types";
+import type { Alert, AlertHistoryItem } from "@/lib/types/alert.types";
 import type { ApiResponse } from "@/lib/types/api.types";
 import type { ContainerInfo } from "@/lib/types/container.types";
+import type { DeployEvent } from "@/lib/types/deploy.types";
 import type { ImageInfo, ImageSummary } from "@/lib/types/image.types";
 import type { ErrorHour } from "@/lib/types/log.types";
 import type { SystemStats } from "@/lib/types/system.types";
@@ -31,6 +37,12 @@ const CONTAINERS: MockContainer[] = [
   {
     id: "4f1c2a9e0b11",
     name: "tees-api",
+    project: "tees",
+    service: "api",
+    health: "healthy",
+    oomKilled: false,
+    finishedAt: null,
+    restartPolicy: "unless-stopped",
     image: "tees-api",
     tag: "1.8.2",
     status: "running",
@@ -43,6 +55,12 @@ const CONTAINERS: MockContainer[] = [
   {
     id: "8b7d55c3e902",
     name: "tees-worker",
+    project: "tees",
+    service: "worker",
+    health: null,
+    oomKilled: false,
+    finishedAt: null,
+    restartPolicy: "always",
     image: "tees-worker",
     tag: "1.8.2",
     status: "restarting",
@@ -55,6 +73,12 @@ const CONTAINERS: MockContainer[] = [
   {
     id: "c09e1f7a3d45",
     name: "nginx",
+    project: null,
+    service: null,
+    health: null,
+    oomKilled: false,
+    finishedAt: null,
+    restartPolicy: "unless-stopped",
     image: "nginx",
     tag: "1.27-alpine",
     status: "running",
@@ -67,6 +91,12 @@ const CONTAINERS: MockContainer[] = [
   {
     id: "2d6a8e4b7f90",
     name: "postgres",
+    project: "tees",
+    service: "postgres",
+    health: "healthy",
+    oomKilled: false,
+    finishedAt: null,
+    restartPolicy: "unless-stopped",
     image: "postgres",
     tag: "16",
     status: "running",
@@ -79,6 +109,12 @@ const CONTAINERS: MockContainer[] = [
   {
     id: "7e3b9c1d5a26",
     name: "redis",
+    project: "tees",
+    service: "redis",
+    health: "healthy",
+    oomKilled: false,
+    finishedAt: null,
+    restartPolicy: "unless-stopped",
     image: "redis",
     tag: "7-alpine",
     status: "running",
@@ -91,6 +127,12 @@ const CONTAINERS: MockContainer[] = [
   {
     id: "91c4e7a2b3d8",
     name: "tees-api-migrate",
+    project: "tees",
+    service: "migrate",
+    health: null,
+    oomKilled: false,
+    finishedAt: iso(14 * HOUR),
+    restartPolicy: "no",
     image: "tees-api",
     tag: "1.8.2-migrator",
     status: "exited",
@@ -154,19 +196,58 @@ const WARNINGS = [
   4, 3, 5, 2, 3, 2, 1, 1, 0, 1, 1, 2, 2, 3, 4, 6, 5, 7, 8, 6, 10, 12, 9, 8,
 ];
 
-export const getMockErrorsHourly = () => {
+// Bagian tiap container dari total di atas; sisanya 0.
+const ERROR_SHARE: Record<string, number> = {
+  "tees-api": 0.7,
+  "tees-worker": 0.3,
+};
+
+export const getMockErrorsHourly = (container?: string) => {
   const currentHour = new Date();
   currentHour.setMinutes(0, 0, 0);
+  const share = container ? (ERROR_SHARE[container] ?? 0) : 1;
   return respond<ErrorHour[]>(
     ERRORS.map((errors, index) => ({
       hour: new Date(
         currentHour.getTime() - (ERRORS.length - 1 - index) * HOUR,
       ).toISOString(),
-      errors,
-      warnings: WARNINGS[index],
+      errors: Math.round(errors * share),
+      warnings: Math.round(WARNINGS[index] * share),
     })),
   );
 };
+
+const DEPLOYS: DeployEvent[] = [
+  {
+    id: "dp-4",
+    container: "tees-api-migrate",
+    image: "tees-api:1.8.2-migrator",
+    occurredAt: iso(14 * HOUR + 2 * MINUTE),
+  },
+  {
+    id: "dp-3",
+    container: "tees-api",
+    image: "tees-api:1.8.2",
+    occurredAt: iso(14 * HOUR),
+  },
+  {
+    id: "dp-2",
+    container: "tees-worker",
+    image: "tees-worker:1.8.2",
+    occurredAt: iso(14 * HOUR),
+  },
+  {
+    id: "dp-1",
+    container: "tees-api",
+    image: "tees-api:1.8.1",
+    occurredAt: iso(3.7 * DAY),
+  },
+];
+
+export const getMockDeploys = (container: string) =>
+  respond<DeployEvent[]>(
+    DEPLOYS.filter((deploy) => deploy.container === container),
+  );
 
 export const getMockActiveAlerts = () =>
   respond<Alert[]>([
@@ -200,6 +281,55 @@ export const getMockActiveAlerts = () =>
       firedAt: iso(97 * MINUTE),
     },
   ]);
+
+const ALERT_HISTORY: AlertHistoryItem[] = [
+  {
+    id: "al-3",
+    kind: "restart_loop",
+    severity: "critical",
+    title: "tees-worker restart loop",
+    description:
+      "14 restart dalam 30 menit. Exit code 1: redis:6379 connection refused.",
+    container: "tees-worker",
+    firedAt: iso(2 * MINUTE),
+    resolvedAt: null,
+  },
+  {
+    id: "al-1",
+    kind: "error_spike",
+    severity: "warning",
+    title: "Error spike tees-api",
+    description: "18 error jam 09:00, 15 di antaranya POST /api/checkout 500.",
+    container: "tees-api",
+    firedAt: iso(97 * MINUTE),
+    resolvedAt: null,
+  },
+  {
+    id: "al-0",
+    kind: "container_exited",
+    severity: "critical",
+    title: "tees-api berhenti (exit 137)",
+    description: "Container mati dan tidak jalan lagi dalam 15 detik.",
+    container: "tees-api",
+    firedAt: iso(14 * HOUR - 5 * MINUTE),
+    resolvedAt: iso(14 * HOUR - 9 * MINUTE),
+  },
+  {
+    id: "al-00",
+    kind: "error_spike",
+    severity: "warning",
+    title: "Error spike tees-api",
+    description: "12 error dalam 60 menit.",
+    container: "tees-api",
+    firedAt: iso(3.6 * DAY),
+    resolvedAt: iso(3.5 * DAY),
+  },
+];
+
+export const getMockAlertHistory = (container: string) =>
+  respond<AlertHistoryItem[]>(
+    ALERT_HISTORY.filter((alert) => alert.container === container),
+  );
 
 const image = (
   repository: string,
@@ -256,3 +386,27 @@ export const getMockImages = () =>
     danglingCount: 3,
     danglingBytes: 1.2 * GB,
   });
+
+// Mock: aksi aktif supaya tombolnya bisa dicoba; mengubah status container
+// tiruan (poll berikutnya menampilkannya).
+export const getMockActionStatus = () =>
+  respond<ActionStatus>({
+    enabled: true,
+    disabledReason: null,
+    protectedProjects: ["samantha-monitoring-be", "samantha-monitoring-fe"],
+  });
+
+export const runMockContainerAction = (
+  name: string,
+  action: ContainerAction,
+) => {
+  const container = CONTAINERS.find((item) => item.name === name);
+  if (container) {
+    const isStop = action === "stop";
+    container.status = isStop ? "exited" : "running";
+    container.exitCode = isStop ? 0 : null;
+    container.startedMsAgo = isStop ? null : 0;
+    container.finishedAt = isStop ? new Date().toISOString() : null;
+  }
+  return respond<ContainerActionResult>({ container: name, action }, 600);
+};

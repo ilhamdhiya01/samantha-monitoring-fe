@@ -1,5 +1,6 @@
 import { default as ActiveAlerts } from "./ActiveAlerts";
 import { default as AppShell } from "./AppShell";
+import { default as ContainerHistory } from "./ContainerHistory";
 import { default as ContainerRedirect } from "./ContainerRedirect";
 import { default as ContainerResources } from "./ContainerResources";
 import { default as ContainerView } from "./ContainerView";
@@ -12,6 +13,7 @@ import { default as Sidebar } from "./Sidebar";
 export const Monitor = {
   ActiveAlerts,
   AppShell,
+  ContainerHistory,
   ContainerRedirect,
   ContainerResources,
   ContainerView,

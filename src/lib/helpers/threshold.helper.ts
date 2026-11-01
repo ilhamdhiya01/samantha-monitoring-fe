@@ -3,7 +3,10 @@ import {
   USAGE_CRITICAL_PCT,
   USAGE_WARN_PCT,
 } from "@/const/monitor.constant";
-import type { ContainerStatus } from "@/lib/types/container.types";
+import type {
+  ContainerHealth,
+  ContainerStatus,
+} from "@/lib/types/container.types";
 
 export type Tone = "ok" | "warn" | "err" | "muted";
 
@@ -21,22 +24,27 @@ export const getUsageTone = (percent: number): Tone => {
 export const isFinished = (status: ContainerStatus, exitCode: number | null) =>
   status === "exited" && exitCode === 0;
 
+// Running tapi healthcheck gagal = rusak bagi pemakainya, walau prosesnya
+// hidup.
 export const getStatusTone = (
   status: ContainerStatus,
   exitCode: number | null = null,
+  health: ContainerHealth | null = null,
 ): Tone => {
-  if (status === "running") return "ok";
+  if (status === "running") return health === "unhealthy" ? "err" : "ok";
   if (isFinished(status, exitCode)) return "muted";
   if (status === "restarting" || status === "paused") return "warn";
   if (status === "created") return "muted";
   return "err";
 };
 
-// "running", "selesai", "exited (1)".
+// "running", "unhealthy", "selesai", "exited (1)".
 export const getStatusLabel = (
   status: ContainerStatus,
   exitCode: number | null = null,
+  health: ContainerHealth | null = null,
 ) => {
+  if (status === "running" && health && health !== "healthy") return health;
   if (isFinished(status, exitCode)) return "selesai";
   if (status === "exited" && exitCode !== null) return `exited (${exitCode})`;
   return status;

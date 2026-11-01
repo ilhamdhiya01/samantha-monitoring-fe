@@ -12,24 +12,31 @@ const button = tv({
       true: "font-mono text-[11px]",
       false: "",
     },
+    // Aksi berisiko (stop container).
+    tone: {
+      default: "",
+      danger: "text-err",
+    },
   },
   defaultVariants: {
     size: "sm",
     mono: false,
+    tone: "default",
   },
 });
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   size?: keyof typeof button.variants.size;
   mono?: boolean;
+  tone?: keyof typeof button.variants.tone;
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ size, mono, className, type = "button", ...props }, ref) => (
+  ({ size, mono, tone, className, type = "button", ...props }, ref) => (
     <button
       ref={ref}
       type={type}
-      className={button({ size, mono, className })}
+      className={button({ size, mono, tone, className })}
       {...props}
     />
   ),

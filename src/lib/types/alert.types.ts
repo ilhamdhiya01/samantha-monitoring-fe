@@ -12,3 +12,9 @@ export interface Alert {
   container: string | null;
   firedAt: string;
 }
+
+// GET /alerts/history: aktif maupun yang sudah selesai.
+export interface AlertHistoryItem extends Alert {
+  // ISO; null = masih aktif.
+  resolvedAt: string | null;
+}

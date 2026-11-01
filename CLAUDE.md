@@ -61,4 +61,4 @@ pnpm format
 
 ## Scope
 
-MVP baca-saja. Aksi tulis (rollback, prune, restart) tampil disabled dengan `V11_ACTION_HINT` sampai v1.1.
+MVP baca-saja, kecuali **stop/start container** (tombol di header log, `ContainerActionButton`): selalu lewat `ConfirmDialog` (ketik nama container), dan disabled + alasan di tooltip kalau BE mematikannya (`GET /actions/status`, default mati) atau container milik monitor sendiri. Aksi tulis lain (rollback, prune, restart) tampil disabled dengan `V11_ACTION_HINT` sampai v1.1.

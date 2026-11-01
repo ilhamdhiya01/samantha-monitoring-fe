@@ -9,6 +9,8 @@ export const POLL_CONTAINERS_MS = 5_000;
 export const POLL_ALERTS_MS = 15_000;
 export const POLL_IMAGES_MS = 30_000;
 export const POLL_ERRORS_MS = 60_000;
+// Riwayat deploy & alert per container.
+export const POLL_HISTORY_MS = 60_000;
 
 // Ambang warna kartu resource (persen).
 export const USAGE_WARN_PCT = 70;

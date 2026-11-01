@@ -6,8 +6,13 @@ import type { ErrorHour } from "@/lib/types/log.types";
 
 import { getMockErrorsHourly } from "./mock/data.mock";
 
-export const getErrorsHourly = async (): Promise<ApiResponse<ErrorHour[]>> => {
-  if (USE_MOCK) return getMockErrorsHourly();
-  const res = await axiosInstance.get(API_ERRORS_HOURLY);
+// Tanpa `container` = semua container dijumlahkan.
+export const getErrorsHourly = async (
+  container?: string,
+): Promise<ApiResponse<ErrorHour[]>> => {
+  if (USE_MOCK) return getMockErrorsHourly(container);
+  const res = await axiosInstance.get(API_ERRORS_HOURLY, {
+    params: { container },
+  });
   return res.data;
 };

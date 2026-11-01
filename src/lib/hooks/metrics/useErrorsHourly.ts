@@ -19,10 +19,11 @@ const selectChart = (response: ApiResponse<ErrorHour[]>) => {
   return { hours, peak, totalErrors, totalWarnings };
 };
 
-export const useErrorsHourly = () => {
+// Tanpa `container` = semua container dijumlahkan.
+export const useErrorsHourly = (container?: string) => {
   return useQuery({
-    queryKey: metricKeys.errorsHourly(),
-    queryFn: getErrorsHourly,
+    queryKey: metricKeys.errorsHourly(container),
+    queryFn: () => getErrorsHourly(container),
     select: selectChart,
     refetchInterval: POLL_ERRORS_MS,
     // Segar sampai jadwal poll berikutnya: pindah menu memakai cache.

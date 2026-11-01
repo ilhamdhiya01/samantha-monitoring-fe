@@ -48,7 +48,13 @@ const RealtimeProvider = ({ children }: RealtimeProviderProps) => {
         },
         onStats: (stats) => write(systemKeys.stats(), stats),
         onContainers: (containers) => write(containerKeys.list(), containers),
-        onAlerts: (alerts) => write(alertKeys.active(), alerts),
+        onAlerts: (alerts) => {
+          write(alertKeys.active(), alerts);
+          // Alert muncul/pulih → riwayat per container ikut berubah.
+          void queryClient.invalidateQueries({
+            queryKey: alertKeys.histories(),
+          });
+        },
         onError: (isClosed) => {
           // Polling jalan lagi selama stream putus.
           setStatus("unavailable");

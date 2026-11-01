@@ -33,6 +33,13 @@ describe("threshold.helper", () => {
     expect(getStatusLabel("running", null)).toBe("running");
   });
 
+  it("flags running containers that fail their healthcheck", () => {
+    expect(getStatusTone("running", null, "unhealthy")).toBe("err");
+    expect(getStatusTone("running", null, "starting")).toBe("ok");
+    expect(getStatusLabel("running", null, "unhealthy")).toBe("unhealthy");
+    expect(getStatusLabel("running", null, "healthy")).toBe("running");
+  });
+
   it("flags more than 5 restarts", () => {
     expect(getRestartTone(5)).toBe("warn");
     expect(getRestartTone(6)).toBe("err");
